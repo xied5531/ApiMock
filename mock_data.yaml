@@ -1,0 +1,82 @@
+name: "mock_server"
+address: ":5555"
+read_timeout_s: 5
+write_timeout_s: 10
+apis:
+  - request:
+      url: "/core"
+      method: "GET"
+    response:
+      status: 200
+  - request:
+      url: "/core/with_path_var/:id"
+      method: "PUT"
+    response:
+      status: 300
+  - request:
+      url: "/core/with_path_var/:id/with_meta_data/body"
+      method: "POST"
+      metadata:
+        path_vars:
+          - "id"
+    response:
+      status: 400
+      body: '{"key":"value", "path_id": <<.path_vars.id>>}'
+  - request:
+      url: "/core/with_path_var/:id/with_meta_data/body/header"
+      method: "POST"
+      metadata:
+        path_vars:
+          - "id"
+        header_keys:
+          - "h1"
+    response:
+      status: 500
+      body: '{"key1":"value1", "path_id": <<.path_vars.id>>}'
+      headers:
+        - key: "Header1"
+          value: "value1"
+        - key: "HeaderKes"
+          value: "h1=<<.header_keys.h1>>"
+  - request:
+      url: "/core/with_path_var/:id/with_meta_data/body/header/multi"
+      method: "POST"
+      metadata:
+        path_vars:
+          - "id"
+        header_keys:
+          - "h1"
+        query_params:
+          - "p1"
+        form_vars:
+          - "f1"
+    response:
+      status: 200
+      body: '{"key1":"value1", "path_id": <<.path_vars.id>>, "head_h1": <<.header_keys.h1>>, "param_p1": <<.query_params.p1>>, "form_f1": <<.form_vars.f1>>}'
+      headers:
+        - key: "Header1"
+          value: "value1"
+        - key: "HeaderKes"
+          value: "h1=<<.header_keys.h1>>"
+  - request:
+      url: "/core/with_path_var/:id/with_meta_data/body/header/all"
+      method: "POST"
+      metadata:
+        path_vars:
+          - "id"
+        header_keys:
+          - "h1"
+        query_params:
+          - "p1"
+        json_body_keys:
+          - "b1"
+          - "b2.k"
+    response:
+      status: 200
+      content_type: "application/json"
+      body: '{"key1":"value1", "path_id": <<.path_vars.id>>, "head_h1": <<.header_keys.h1>>, "param_p1": <<.query_params.p1>>, "body_b1": <<.json_body_keys.b1>>, "body_b2_k": <<.json_body_keys.b2.k>>}'
+      headers:
+        - key: "Header1"
+          value: "value1"
+        - key: "HeaderKes"
+          value: "h1=<<.header_keys.h1>>"
